@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Tutorial | Free PDK</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Tutorial" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Free PDK is an effort to create an open source alternative to the proprietary Padauk µC programmer, as well as adding support to SDCC for Padauk µCs." />
+<meta property="og:description" content="Free PDK is an effort to create an open source alternative to the proprietary Padauk µC programmer, as well as adding support to SDCC for Padauk µCs." />
+<meta property="og:site_name" content="Free PDK" />
+<script type="application/ld+json">
+{"@type":"WebPage","url":"/tutorial","headline":"Tutorial","description":"Free PDK is an effort to create an open source alternative to the proprietary Padauk µC programmer, as well as adding support to SDCC for Padauk µCs.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Free PDK" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper">
+<a class="site-title" rel="author" href="/">Free PDK</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger">
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewbox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/tutorial">Tutorial</a></div>
+      </nav>
+</div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+  <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Tutorial</h1>
+  </header>
+
+  <div class="post-content">
+    <div class="callout">
+  This tutorial is still incomplete. Please contribute by clicking on the `Edit this page on GitHub` link at the bottom of this page.
+</div>
+
+<h2 id="registers">
+<a href="#registers"><img class="emoji" title=":link:" alt=":link:" src="https://github.githubassets.com/images/icons/emoji/unicode/1f517.png" height="20" width="20"></a> Registers</h2>
+
+<p>All registers are in undefined state at startup.
+The “Reset” column in the datasheets is misleading (and only emulated by the original IDE which generates code to set all registers to 0).
+You have to initialize all registers yourself.</p>
+<blockquote>
+  <p>Source: <a href="https://www.eevblog.com/forum/blog/eevblog-1144-padauk-programmer-reverse-engineering/msg3129442/#msg3129442">https://www.eevblog.com/forum/blog/eevblog-1144-padauk-programmer-reverse-engineering/msg3129442/#msg3129442</a></p>
+</blockquote>
+
+<h2 id="clock-sources-and-setup">
+<a href="#clock-sources-and-setup"><img class="emoji" title=":link:" alt=":link:" src="https://github.githubassets.com/images/icons/emoji/unicode/1f517.png" height="20" width="20"></a> Clock Sources and Setup</h2>
+
+<div class="callout">
+  TODO: This section is still missing and should explain the following terms:
+
+  _sdcc_external_startup, IHRC, ILRC, external crystal, SYSCLK, maximum possible clk frequency, factory calibrated values, easy pdk calibration, ...
+</div>
+
+<h2 id="digital-io">
+<a href="#digital-io"><img class="emoji" title=":link:" alt=":link:" src="https://github.githubassets.com/images/icons/emoji/unicode/1f517.png" height="20" width="20"></a> Digital I/O</h2>
+
+<p>Digital I/O is organized in ports of (at most) 8 pins. The ports are named <code class="language-plaintext highlighter-rouge">A</code>, <code class="language-plaintext highlighter-rouge">B</code>, and <code class="language-plaintext highlighter-rouge">C</code>.
+I/O pins are controlled by the following registers (replace <code class="language-plaintext highlighter-rouge">x</code> by <code class="language-plaintext highlighter-rouge">A</code>, <code class="language-plaintext highlighter-rouge">B</code>, or <code class="language-plaintext highlighter-rouge">C</code>):</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">PxC</code> <strong>Control Register</strong>: Controls whether the pin is used as an input (<code class="language-plaintext highlighter-rouge">0</code>) or output (<code class="language-plaintext highlighter-rouge">1</code>).</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">Px</code> <strong>Data Register</strong>: Sets the output low (<code class="language-plaintext highlighter-rouge">0</code>) or (<code class="language-plaintext highlighter-rouge">high</code>). Has no effect on inputs.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">PxPH</code> <strong>Pull-up (“pull-high”) Register</strong>:
+Enables a pull-up resistor. The resistor is also active when the pin is used as an output and driven high (!)</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">PxPL</code> <strong>Pull-down (“pull-low”) Register</strong>:
+Enables a pull-down resistor (only very few ports and pins have pull-down resistors).
+It is unknown whether the resistor is also active when the pin is used as an output and driven high (!)</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">PxDIER</code> <strong>Digital Input Enable Register</strong>: For pins to work as digital inputs, this register needs to be set to <code class="language-plaintext highlighter-rouge">1</code>.
+Otherwise the input signal is cut off from the digital circuitry (including the external interrupt hardware + wake up functionality).
+This is recommended when using the pin as an analog input to the ADC or comparator, and required when using the pin as input of an external crystal.</li>
+</ul>
+
+<p>The following table provides an overview of how the registers work together to control an I/O pin (this example uses PB.0).</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>PBC.0</th>
+      <th>PB.0</th>
+      <th>PBPH.0</th>
+      <th>PBPL.0</th>
+      <th>PBDIER.0</th>
+      <th>Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>x</td>
+      <td>x</td>
+      <td>x</td>
+      <td>0</td>
+      <td>Digital I/O disabled (can only use pin for analog input and crystal)</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>x</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>Input without pull resistors</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>x</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>Input with pull-up resistor</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>x</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>Input with pull-down resistor</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>x</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td><em>not explicitly mentioned in datasheet</em></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>0</td>
+      <td>x</td>
+      <td>x</td>
+      <td>x</td>
+      <td>Output low wihout pull resistors</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>x</td>
+      <td>Output high wihout pull resistors</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>x</td>
+      <td>Output high with pull-up resistor</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>x</td>
+      <td><em>not explicitly mentioned in datasheet</em></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>x</td>
+      <td><em>not explicitly mentioned in datasheet</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="maximum-current">
+<a href="#maximum-current"><img class="emoji" title=":link:" alt=":link:" src="https://github.githubassets.com/images/icons/emoji/unicode/1f517.png" height="20" width="20"></a> Maximum Current</h3>
+
+<p>The maximum current an I/O pin can drive and sink varies by pin and µC.
+Take a look at the <a href="/chips/PFS173">interactive pinout diagram of an individual µC</a> and enable “Maximum Sink/Drive Current” to learn more.</p>
+
+<div class="callout">
+  TODO: Many µCs can increase the maximum current on two of their pins.
+
+  -&gt; How do I enable that?
+  -&gt; Is there any downside to enabling that?
+</div>
+
+<h2 id="interrupts">
+<a href="#interrupts"><img class="emoji" title=":link:" alt=":link:" src="https://github.githubassets.com/images/icons/emoji/unicode/1f517.png" height="20" width="20"></a> Interrupts</h2>
+
+<p>Padauk µCs provide up to 8 interrupt sources.
+Interrupts are configured with the following registers:</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">INTEGS</code>: Interrupt Edge Select Register</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">INTRQ</code>:  Interrupt Request Register</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">INTEN</code>:  Interrupt Enable Register</li>
+</ul>
+
+<p>Whenever an interrupt occurs, the corresponding bit in the <code class="language-plaintext highlighter-rouge">INTRQ</code> register is set to <code class="language-plaintext highlighter-rouge">1</code> by hardware.
+The µC never sets the bit back to <code class="language-plaintext highlighter-rouge">0</code>. This has to be done by your program.</p>
+
+<p>If you want to trigger an interrupt service routine (ISR) when an interrupt occurs,
+then you have to individually enable it for each interrupt source by setting the corresponding bit to <code class="language-plaintext highlighter-rouge">1</code> in the <code class="language-plaintext highlighter-rouge">INTEN</code> register.
+In addition, you need to enable interrupts globally by calling <code class="language-plaintext highlighter-rouge">__engint()</code>.</p>
+
+<p>All interrupts share a single ISR, which is denoted by adding the <code class="language-plaintext highlighter-rouge">__interrupt(0)</code> attribute to the function definition.
+Inside the ISR, you have to check which interrupt(s) triggered it by checking the corresponding bits in the <code class="language-plaintext highlighter-rouge">INTRQ</code> register.
+It is possible for multiple interrupts to occur at the same time</p>
+
+<p>If you handle multiple interrupts in your ISR <strong>and</strong> you disable an interrupt conditionally by setting its corresponding bit in <code class="language-plaintext highlighter-rouge">INTEN</code> to <code class="language-plaintext highlighter-rouge">0</code> at some point in your program, you also have to check the <code class="language-plaintext highlighter-rouge">INTEN</code> register when the ISR is called. This is because the bit in <code class="language-plaintext highlighter-rouge">INTRQ</code> is still set even if the interrupt is disabled in <code class="language-plaintext highlighter-rouge">INTEN</code>.
+The alternative is to disable <strong>all</strong> interrupts whenever you want to disable a single interrupt by calling <code class="language-plaintext highlighter-rouge">__disgint()</code>.</p>
+
+<p>The following example shows how to use the two external interrupts on a PFS173:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdint.h&gt;
+#include &lt;pdk/device.h&gt;
+</span>
+<span class="k">volatile</span> <span class="kt">uint16_t</span> <span class="n">counter</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">interrupt</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="n">__interrupt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span>
+    <span class="n">INTEN</span> <span class="o">&amp;</span> <span class="n">INTEN_PA0</span>  <span class="c1">// Is the interrupt enabled?</span>
+    <span class="o">&amp;&amp;</span>
+    <span class="n">INTRQ</span> <span class="o">&amp;</span> <span class="n">INTRQ_PA0</span>  <span class="c1">// Did the interrupt occur?</span>
+  <span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Reset interrupt request bit</span>
+    <span class="n">INTRQ</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">INTRQ_PA0</span><span class="p">;</span>
+
+    <span class="c1">// Handle interrupt</span>
+    <span class="n">counter</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span>
+    <span class="n">INTEN</span> <span class="o">&amp;</span> <span class="n">INTEN_PB0</span>  <span class="c1">// Is the interrupt enabled?</span>
+    <span class="o">&amp;&amp;</span>
+    <span class="n">INTRQ</span> <span class="o">&amp;</span> <span class="n">INTRQ_PB0</span>  <span class="c1">// Did the interrupt occur?</span>
+  <span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Reset interrupt request bit</span>
+    <span class="n">INTRQ</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">INTRQ_PB0</span><span class="p">;</span>
+
+    <span class="c1">// Handle interrupt</span>
+    <span class="c1">// ...</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">INTEN</span> <span class="o">=</span> <span class="n">INTEN_PA0</span> <span class="o">|</span> <span class="n">INTEN_PB0</span><span class="p">;</span>
+  <span class="n">INTEGS</span> <span class="o">=</span> <span class="n">INTEGS_PA0_BOTH</span> <span class="o">|</span> <span class="n">INTEGS_PB0_BOTH</span><span class="p">;</span>
+
+  <span class="c1">// Further initialization code</span>
+
+  <span class="c1">// Enable interrupts.</span>
+  <span class="n">INTRQ</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">__engint</span><span class="p">();</span>
+
+  <span class="k">for</span><span class="p">(;;)</span> <span class="p">{</span>
+    <span class="c1">// Make sure to temporarily disable the interrupt when</span>
+    <span class="c1">// reading the variable from the main program, since access</span>
+    <span class="c1">// to 16 bit variables is not atomic.</span>
+    <span class="kt">uint16_t</span> <span class="n">i</span><span class="p">;</span>
+
+    <span class="n">INTEN</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">INTEN_PA0</span><span class="p">;</span>
+    <span class="c1">// The ISR is now no longer called when an interrupt at PA0 occurrs.</span>
+    <span class="c1">// However, the INTRQ_PA0 bit in INTRQ will still be set if an interrupt at PA0 occurrs.</span>
+
+    <span class="c1">// -&gt; Let's say at this moment the signal at PA0 changes</span>
+    <span class="c1">// -&gt; INTRQ &amp; INTRQ_PA0 is set to 1 by hardware</span>
+    <span class="c1">// -&gt; The ISR is _not_ called, because INTEN &amp; INTEN_PA0 is not set.</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="n">counter</span><span class="p">;</span>
+
+    <span class="c1">// -&gt; Let's say at this moment the signal at PB0 changes</span>
+    <span class="c1">// -&gt; INTRQ &amp; INTRQ_PB0 is set to 1 by hardware</span>
+    <span class="c1">// -&gt; The ISR is called, because INTEN &amp; INTEN_PB0 is set AND interrupts are globally enabled.</span>
+    <span class="c1">//</span>
+    <span class="c1">// Important: The INTRQ_PA0 bit is still set to 1!</span>
+    <span class="c1">// If we don't check INTEN &amp; INTEN_PA0 in the ISR, the code for PA0 would be triggered even</span>
+    <span class="c1">// though we disabled the interrupt.</span>
+
+    <span class="c1">// Re-enable the PA0 interrupt now that we have read the counter variable.</span>
+    <span class="n">INTEN</span> <span class="o">|=</span> <span class="n">INTEN_PA0</span><span class="p">;</span>
+
+    <span class="c1">// ...</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span> <span class="kt">char</span> <span class="nf">_sdcc_external_startup</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+  </div>
+
+</article>
+
+<div class="edit-page">
+  <a href="https://github.com/free-pdk/free-pdk.github.io/edit/production/tutorial.md">
+    Edit this page on GitHub
+  </a>
+</div>
+
+</div>
+
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Free PDK</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Free PDK</li>
+</ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+<ul class="social-media-list"><li><a href="https://github.com/free-pdk"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">free-pdk</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Free PDK is an effort to create an open source alternative to the proprietary
+Padauk µC programmer, as well as adding support to SDCC for Padauk µCs.
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
